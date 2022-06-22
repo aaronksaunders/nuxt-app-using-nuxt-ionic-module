@@ -1,0 +1,7 @@
+{
+  "name": "ionicnuxtapp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}
