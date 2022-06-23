@@ -1,6 +1,8 @@
-# Nuxt 3 Minimal Starter
+# Nuxt 3 Minimal Ionic Framework Capacitor Camera Starter Mobile App using Nuxt Ionic Module 
 
-Look at the [nuxt 3 documentation](https://v3.nuxtjs.org) to learn more.
+- Look at the [nuxt 3 documentation](https://v3.nuxtjs.org) to learn more.
+- Look at the [Nuxt Ionic](https://ionic.roe.dev/) to learn more.
+- See associated video [Getting Started Building Mobile Apps With The Nuxt Ionic Module for Nuxt 3](https://www.youtube.com/watch?v=f4sB7NhCgRw)
 
 ## Setup
 
@@ -13,30 +15,5 @@ yarn install
 # npm
 npm install
 
-# pnpm
-pnpm install --shamefully-hoist
 ```
 
-## Development Server
-
-Start the development server on http://localhost:3000
-
-```bash
-npm run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-npm run build
-```
-
-Locally preview production build:
-
-```bash
-npm run preview
-```
-
-Checkout the [deployment documentation](https://v3.nuxtjs.org/guide/deploy/presets) for more information.
