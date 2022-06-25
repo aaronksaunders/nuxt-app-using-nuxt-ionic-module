@@ -2,15 +2,20 @@
   "name": "ionicnuxtapp",
   "private": true,
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "ionic:build": "npm run generate"
+    "build": "nuxi build; npm run cp:data",
+    "dev": "nuxi dev",
+    "generate": "nuxi generate; npm run cp:data",
+    "preview": "nuxi preview",
+    "cp:data": "cp ./prisma/mydata.db ./.output/server/node_modules/.prisma/client/mydata.db",
+    "ionic:build": "nuxi generate"
   },
   "devDependencies": {
+    "@types/node": "^18.0.0",
     "nuxt": "3.0.0-rc.4",
-    "nuxt-ionic": "^0.2.1"
+    "nuxt-ionic": "^0.2.2",
+    "prisma": "^3.15.2",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4"
   },
   "dependencies": {
     "@capacitor/android": "3.6.0",
@@ -19,7 +24,9 @@
     "@capacitor/cli": "3.6.0",
     "@capacitor/core": "3.6.0",
     "@capacitor/haptics": "1.1.4",
+    "@capacitor/ios": "3.6.0",
     "@capacitor/keyboard": "1.2.3",
-    "@capacitor/status-bar": "1.0.8"
+    "@capacitor/status-bar": "1.0.8",
+    "@prisma/client": "^3.15.2"
   }
 }

@@ -1,6 +1,6 @@
 {
   "appId": "com.aks.ionicnuxtapp",
   "appName": "ionicnuxtapp",
-  "webDir": "dist",
+  "webDir": ".output/public",
   "bundledWebRuntime": false
 }
