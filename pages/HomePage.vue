@@ -2,24 +2,30 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Home</ion-title>
+        <ion-title>Nuxt Ionic Prisma Photo Demo</ion-title>
         <ion-buttons slot="end">
           <ion-button>LOGOUT</ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
-      <h1>Home Page</h1>
-      <p>This is the Home Page</p>
+      <ion-loading :is-open="pending" message="LOADING..."></ion-loading>
+      <ion-loading :is-open="saving" message="SAVING..."></ion-loading>
+      <p>
+        Sample app with Nuxt for server and client mobile app. Prisma for saving the data
+        to database and Ionic / Capacitor for device capabilities
+      </p>
       <ion-button color="danger" @click="ionRouter.push('/next')"> Next Page </ion-button>
       <ion-button @click="doCamera"> Camera </ion-button>
       <ion-button @click="doSave"> SAVE RECORD </ion-button>
-      <ion-img :src="imageURL" style="width: 50% !important" />
+      <div v-if="imageURL">
+        <ion-img :src="imageURL" style="width: 50% !important" />
+      </div>
       <!-- {{ data }} -->
       <ion-card v-for="item in data" :key="item?.id">
         <ion-card-header>
-          <ion-card-title>Card Title</ion-card-title>
-          <ion-card-subtitle>Card Subtitle</ion-card-subtitle>
+          <ion-card-title>{{ item?.title }}</ion-card-title>
+          <ion-card-subtitle>{{ item?.content }}</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content v-if="item?.image">
           <ion-img :src="(item?.image as any)" />
@@ -30,7 +36,19 @@
 </template>
 <script lang="ts" setup>
 import { Camera, CameraResultType, ImageOptions } from "@capacitor/camera";
+import { alertController } from "@ionic/vue";
 import { ref } from "vue";
+
+interface ImagePost {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: any;
+  updatedAt: any;
+  image: string;
+  published: boolean;
+}
+interface ImagePostArray extends Array<ImagePost> {}
 
 definePageMeta({
   alias: ["/", "/home"],
@@ -49,21 +67,41 @@ useHead({
 });
 
 const ionRouter = useIonRouter();
-const imageURL = ref(null);
+const imageURL = ref<string | null>(null);
+const saving = ref<boolean>(false);
 const API_URL = useRuntimeConfig().public.API_URL;
-console.log(API_URL);
-const { data, pending, error, refresh } = await useAsyncData("posts", () => $fetch(`${API_URL}/getAllPosts`));
-if (error?.value) {
-  console.log((error?.value as Error)?.message);
-  alert((error?.value as Error)?.message);
-}
-console.log(data);
 
+// load the data from the API
+const { data, pending, error, refresh } = await useAsyncData<ImagePostArray>(
+  "posts",
+  () => $fetch(`${API_URL}/getAllPosts`)
+);
+
+/**
+ * Display an alert
+ */
+const doAlert = (options) => {
+  return alertController
+    .create({ buttons: ["OK"], ...options })
+    .then((alert) => alert.present());
+};
+
+// display error if necessary
+if (error?.value) {
+  doAlert({
+    header: "Error Loading Data",
+    message: (error?.value as Error)?.message,
+  });
+}
+
+/**
+ * Take a photo with the camera
+ */
 const doCamera = async () => {
   const image = await Camera.getPhoto({
     quality: 90,
     // allowEditing: true,
-    correctOrientation : true,
+    correctOrientation: true,
     width: 400,
     resultType: CameraResultType.Base64,
   });
@@ -71,23 +109,43 @@ const doCamera = async () => {
   imageURL.value = `data:${image.format};base64,${image.base64String}`;
 };
 
+/**
+ * Save the image to the API
+ */
 const doSave = async () => {
-  const resp = await $fetch(`${API_URL}/post`, {
-    method: "POST",
-    body: JSON.stringify({
-      title: "Test " + new Date().toISOString(),
-      content: "Test",
+  saving.value = true;
+
+  try {
+    const dataToSave: Partial<ImagePost> = {
+      title: "Test Sample",
+      content: "Test Content" + new Date().toISOString(),
       image: imageURL.value,
-    }),
-  });
+      published: true,
+    };
 
-  await refresh();
+    await $fetch(`${API_URL}/post`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataToSave),
+    });
+    imageURL.value = null;
+    await refresh();
 
-  imageURL.value = null;
+    saving.value = false;
+
+    doAlert({
+      header: "Saving Image Post",
+      message: "Image saved successfully",
+    });
+  } catch (error) {
+    saving.value = false;
+    doAlert({
+      header: "Error",
+      message: error.message,
+    });
+  }
 };
 </script>
-<style lang="css">
-.ios.ion-page {
-  --ion-safe-area-top: 47px !important;
-}
-</style>
+<style lang="css"></style>
