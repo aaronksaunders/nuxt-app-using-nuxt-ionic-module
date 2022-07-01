@@ -11,16 +11,21 @@
     <ion-content class="ion-padding">
       <ion-loading :is-open="pending" message="LOADING..."></ion-loading>
       <ion-loading :is-open="saving" message="SAVING..."></ion-loading>
+
+      <image-post-input
+        :showImagePostInput="showImagePostInput"
+        :imageURL="imageURL"
+        @image-post-submit="doSave"
+        @image-post-cancel="showImagePostInput = false"
+      />
       <p>
         Sample app with Nuxt for server and client mobile app. Prisma for saving the data
         to database and Ionic / Capacitor for device capabilities
       </p>
       <ion-button color="danger" @click="ionRouter.push('/next')"> Next Page </ion-button>
-      <ion-button @click="doCamera"> Camera </ion-button>
-      <ion-button @click="doSave"> SAVE RECORD </ion-button>
-      <div v-if="imageURL">
-        <ion-img :src="imageURL" style="width: 50% !important" />
-      </div>
+      <ion-button @click="doCamera"> CREATE IMAGE POST </ion-button>
+      <!-- <ion-button @click="showImagePostInput = true"> SAVE RECORD </ion-button> -->
+
       <!-- {{ data }} -->
       <ion-card v-for="item in data" :key="item?.id">
         <ion-card-header>
@@ -38,6 +43,7 @@
 import { Camera, CameraResultType, ImageOptions } from "@capacitor/camera";
 import { alertController } from "@ionic/vue";
 import { ref } from "vue";
+import ImagePostInput from "./components/ImagePostInput.vue";
 
 interface ImagePost {
   id: number;
@@ -69,6 +75,7 @@ useHead({
 const ionRouter = useIonRouter();
 const imageURL = ref<string | null>(null);
 const saving = ref<boolean>(false);
+const showImagePostInput = ref<boolean>(false);
 const API_URL = useRuntimeConfig().public.API_URL;
 
 // load the data from the API
@@ -80,7 +87,7 @@ const { data, pending, error, refresh } = await useAsyncData<ImagePostArray>(
 /**
  * Display an alert
  */
-const doAlert = (options) => {
+const doAlert = (options: { header: string; message: string }) => {
   return alertController
     .create({ buttons: ["OK"], ...options })
     .then((alert) => alert.present());
@@ -107,18 +114,29 @@ const doCamera = async () => {
   });
 
   imageURL.value = `data:${image.format};base64,${image.base64String}`;
+
+  // show dialog to confirm image
+  showImagePostInput.value = true;
 };
 
 /**
  * Save the image to the API
+ *
+ * @param title
+ * @param content
  */
-const doSave = async () => {
+const doSave = async ({ title, content }: { title: string; content: string }) => {
+  // hide the input form
+  showImagePostInput.value = false;
+
+  // show the saving indicator
   saving.value = true;
 
+  debugger;
   try {
     const dataToSave: Partial<ImagePost> = {
-      title: "Test Sample",
-      content: "Test Content" + new Date().toISOString(),
+      title,
+      content,
       image: imageURL.value,
       published: true,
     };
